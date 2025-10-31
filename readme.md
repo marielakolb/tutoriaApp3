@@ -13,11 +13,42 @@ Este es un sistema web de tutorías que incluye:
 - **Gestión de Perfiles**: Edición de perfil con subida de fotos.
 - **Seguridad**: Contraseñas hasheadas, validación de sesiones y permisos por roles.
 
-### tutoriaApp.sql
+## Estructura del Proyecto
 
-Estando en PHPMYADMIN, crea una nueva base de datos llamada tutoriaapp, una vez creada la base, haz clic en ella e ir a la solapa SQL, en la consola pegar el siguiente código y hacer clic al botón Continuar:
+- `index.php`: Punto de entrada principal, maneja el enrutamiento.
+- `config.php`: Configuración de la base de datos.
+- `models/`: Modelos para interactuar con la base de datos.
+- `controllers/`: Controladores para manejar la lógica de negocio.
+- `views/`: Vistas para la presentación de datos.
+- `images/`: Carpeta para almacenar fotos de perfil de usuarios.
+- `tutoriaApp.sql`: Script SQL para crear la base de datos.
 
-```sql
+## Tecnologías Utilizadas
+
+- PHP 7+
+- MySQL/MariaDB
+- HTML/CSS (básico)
+- PDO para conexiones a base de datos
+
+## Instrucciones de Instalación
+
+1. Importar el archivo `tutoriaApp.sql` en MySQL para crear la base de datos.
+2. Configurar la conexión a la base de datos en `config.php`.
+3. Crear la carpeta `images/` en la raíz del proyecto para almacenar fotos de perfil.
+4. Ejecutar el servidor web (ej. Apache) y acceder a `index.php`.
+
+## Próximas Mejoras
+
+- Implementar un sistema de notificaciones.
+- Agregar validación de formularios en el lado del cliente.
+- Mejorar el diseño de la interfaz con CSS y JavaScript.
+- Implementar paginación en listas largas.
+- Agregar funcionalidad de búsqueda y filtros.
+- Eliminar fotos antiguas al actualizar perfil para liberar espacio.
+
+### Creación de la Base de Datos en MySQL (usando script SQL)
+Estando en PHPMYADMIN, crea una nueva base de datos llamada tutoriaapp, una vez creada la base, haz clic en ella e ir a la solapa SQL, en la consola, pegar el siguiente código y hacer clic al botón Continuar:
+
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 -- ----------------------------
@@ -142,7 +173,7 @@ INSERT INTO `usuarios` VALUES (12, 'admin2', '$2y$10$zRfv8R7NGdkv5yZLpHdmbO/FFsV
 
 SET FOREIGN_KEY_CHECKS = 1;
 
-### /Lo siguiente son las credenciales de algunos de los usuarios creados en la base de datos según su rol:
+### Lo siguiente son las credenciales de algunos de los usuarios creados en la base de datos según su rol:
 USERs
 contraseña de los usuarios:
 juan: 123
@@ -154,13 +185,7 @@ pepe: 123
 
 Admins y Users tienen acceso a funcionalidades diferentes según lo definido en la aplicación.
 
-## Paso 1: Configuración de la Base de Datos
-
-### config.php
-
-Crea el archivo `config.php` en la raíz del proyecto:
-
-```php
+### Paso 1: Crear el archivo `config.php` en la raíz del proyecto, escribir el siguiente código dentro:
 <?php
     $servername = "localhost"; //nombre servidor base de datos
     $username = "root"; //nombre de usuario para la conexion
@@ -179,14 +204,11 @@ Crea el archivo `config.php` en la raíz del proyecto:
         die ("Error de conexión: " . $e->getMessage());
     }
 ?>
-```
 
-## PRUEBA Paso 1: Configuración de la Base de Datos
-
+## PRUEBA Paso 1: 
 2. Crea el archivo `config.php` en la raíz del proyecto con el contenido proporcionado.
 3. Crea un archivo de prueba simple llamado `test_db.php` en la raíz con el siguiente contenido para verificar la conexión:
 
-```php
 <?php
 require_once('config.php');
 
@@ -198,51 +220,13 @@ try {
     echo "Error en la conexión: " . $e->getMessage();
 }
 ?>
-```
 
-4. Accede a `test_db.php` desde tu navegador (ej. `http://localhost/tutoriaapp3/test_db.php`). Deberías ver "Conexión exitosa. Total de usuarios: X" donde X es el número de usuarios en la BD.
-5. Elimina `test_db.php` después de la verificación para seguridad.
+4. Accede a test_db.php desde tu navegador (ej. http://localhost/tutoriaapp3/test_db.php). Deberías ver "Conexión exitosa. Total de usuarios: X" donde X es el número de usuarios en la BD.
+5. Elimina test_db.php después de la verificación para seguridad.
 
-## PRUEBA Paso 2: Verificación de Modelos
+## Paso 2: Crear los Modelos:
+### models/UserModel.php: y escribir el siguiente código.
 
-1. Crea un archivo `test_models.php` en la raíz del proyecto con el siguiente contenido para probar los modelos:
-
-```php
-<?php
-require_once('config.php');
-require_once('models/UserModel.php');
-require_once('models/TutorModel.php');
-require_once('models/RequestModel.php');
-
-$userModel = new UserModel();
-$tutorModel = new TutorModel();
-$requestModel = new RequestModel();
-
-echo "Probando UserModel...<br>";
-$users = $userModel->getAllUsers();
-echo "Total usuarios: " . count($users) . "<br>";
-
-echo "Probando TutorModel...<br>";
-$tutors = $tutorModel->getAllTutors();
-echo "Total tutores: " . count($tutors) . "<br>";
-
-echo "Probando RequestModel...<br>";
-$pending = $requestModel->getPendingRequests();
-echo "Solicitudes pendientes: " . count($pending) . "<br>";
-
-echo "Modelos verificados exitosamente.";
-?>
-```
-
-2. Accede a `test_models.php` desde tu navegador (ej. `http://localhost/tutoriaapp3/test_models.php`). Deberías ver los conteos de usuarios, tutores y solicitudes sin errores.
-3. Elimina `test_models.php` después de la verificación.
-```
-
-## Paso 2: Crear los Modelos
-
-### models/UserModel.php
-
-```php
 <?php
 /**
  * Modelo de Usuario
@@ -476,9 +460,8 @@ class UserModel {
 ?>
 ```
 
-### models/TutorModel.php
+### models/TutorModel.php: Luego de crear el archivo, escribir el siguiente código php en él:
 
-```php
 <?php
     require_once ('config.php');
 
@@ -670,11 +653,9 @@ class UserModel {
         }
     }
 ?>
-```
 
-### models/RequestModel.php
+### models/RequestModel.php: luego de crearlo, escribir el siguiente código php:
 
-```php
 <?php
     require_once('config.php');
 
@@ -827,11 +808,11 @@ class UserModel {
             return true;
         }
     }
-## PRUEBA Paso 2: Verificación de Modelos
 
-1. Crea un archivo `test_models.php` en la raíz del proyecto con el siguiente contenido para probar los modelos:
+## PRUEBA Paso 2: Verificación de Modelos:
 
-```php
+1. Crear un archivo `test_models.php` en la raíz del proyecto con el siguiente contenido para probar los modelos:
+
 <?php
 require_once('config.php');
 require_once('models/UserModel.php');
@@ -856,16 +837,13 @@ echo "Solicitudes pendientes: " . count($pending) . "<br>";
 
 echo "Modelos verificados exitosamente.";
 ?>
-```
 
 2. Accede a `test_models.php` desde tu navegador (ej. `http://localhost/tutoriaapp3/test_models.php`). Deberías ver los conteos de usuarios, tutores y solicitudes sin errores.
 3. Elimina `test_models.php` después de la verificación.
 
 ## Paso 3: Crear los Controladores
+### controllers/AuthController.php: una vez creado el archivo en la carpeta controllers, escribir el siguiente código php:
 
-### controllers/AuthController.php
-
-```php
 <?php
 /**
  * Controlador de Autenticación
@@ -1081,11 +1059,9 @@ class AuthController {
     }
 }
 ?>
-```
 
-### controllers/HomeController.php
+### controllers/HomeController.php: creado el archivo, escribir el siguiente código php:
 
-```php
 <?php
 require_once('models/TutorModel.php');
 
@@ -1104,11 +1080,10 @@ class HomeController {
     }
 }
 ?>
-```
 
-### controllers/TutorController.php
 
-```php
+### controllers/TutorController.php: creado el archivo, escribir el siguiente código:
+
 <?php
 require_once('models/TutorModel.php');
 require_once('models/RequestModel.php');
@@ -1285,11 +1260,9 @@ class TutorController {
     }
 }
 ?>
-```
 
-### controllers/AdminController.php
+### controllers/AdminController.php: una vez creado el archivo, escribir el siguiente código php:
 
-```php
 <?php
 /**
  * Controlador de Administrador
@@ -1565,13 +1538,11 @@ class AdminController {
     }
 }
 ?>
-```
 
-## Paso 4: Crear las Vistas
+## Paso 4: Crear las Vistas:
 
-### views/home.php
+### views/home.php: creado el archivo, escribir el siguiente código:
 
-```php
 <!DOCTYPE html>
 <html>
 <head>
@@ -1630,11 +1601,9 @@ class AdminController {
     </ul>
 </body>
 </html>
-```
 
-### views/admin_dashboard.php
+### views/admin_dashboard.php: dentro de este archivo, colocar el siguiente código php:
 
-```php
 <!DOCTYPE html>
 <html>
 <head>
@@ -1708,9 +1677,8 @@ class AdminController {
 </html>
 ```
 
-## Paso 5: Crear el Router (index.php)
+## Paso 5: Crear el Router (index.php): creado el archivo, colocar el siguiente código:
 
-```php
 <?php
 require_once('controllers/AuthController.php');
 require_once('controllers/HomeController.php');
@@ -1831,7 +1799,6 @@ switch ($action) {
         break;
 }
 ?>
-```
 
 ## Funcionalidades Implementadas
 
@@ -1876,42 +1843,9 @@ switch ($action) {
 - Diseño simple y funcional con HTML básico.
 - Formularios con enctype="multipart/form-data" para subida de archivos.
 
-## Estructura del Proyecto
-
-- `index.php`: Punto de entrada principal, maneja el enrutamiento.
-- `config.php`: Configuración de la base de datos.
-- `models/`: Modelos para interactuar con la base de datos.
-- `controllers/`: Controladores para manejar la lógica de negocio.
-- `views/`: Vistas para la presentación de datos.
-- `images/`: Carpeta para almacenar fotos de perfil de usuarios.
-- `tutoriaApp.sql`: Script SQL para crear la base de datos.
-
-## Tecnologías Utilizadas
-
-- PHP 7+
-- MySQL/MariaDB
-- HTML/CSS (básico)
-- PDO para conexiones a base de datos
-
-## Instrucciones de Instalación
-
-1. Importar el archivo `tutoriaApp.sql` en MySQL para crear la base de datos.
-2. Configurar la conexión a la base de datos en `config.php`.
-3. Crear la carpeta `images/` en la raíz del proyecto para almacenar fotos de perfil.
-4. Ejecutar el servidor web (ej. Apache) y acceder a `index.php`.
-
-## Próximas Mejoras
-
-- Implementar un sistema de notificaciones.
-- Agregar validación de formularios en el lado del cliente.
-- Mejorar el diseño de la interfaz con CSS y JavaScript.
-- Implementar paginación en listas largas.
-- Agregar funcionalidad de búsqueda y filtros.
-- Eliminar fotos antiguas al actualizar perfil para liberar espacio.
-
 ## Paso 6: Probar la Aplicación
 
-1. Accede a `index.php` y registra un nuevo usuario.
+1. Accede a index.php y registra un nuevo usuario.
 2. Inicia sesión con el usuario registrado.
 3. Regístrate como tutor seleccionando asignaturas.
 4. Solicita tutoría a otro tutor.
@@ -1923,4 +1857,5 @@ switch ($action) {
 10. Desactiva o elimina usuarios desde la lista.
 
 ¡Felicidades! Has construido un sistema completo de tutorías con PHP y MySQL.
+
 
