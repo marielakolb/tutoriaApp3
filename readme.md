@@ -13,36 +13,9 @@ Este es un sistema web de tutorías que incluye:
 - **Gestión de Perfiles**: Edición de perfil con subida de fotos.
 - **Seguridad**: Contraseñas hasheadas, validación de sesiones y permisos por roles.
 
-## Paso 1: Configuración de la Base de Datos
-
-### config.php
-
-Crea el archivo `config.php` en la raíz del proyecto:
-
-```php
-<?php
-    $servername = "localhost"; //nombre servidor base de datos
-    $username = "root"; //nombre de usuario para la conexion
-    $password = ""; //contraseña para la coneccion (vacia por defecto en desarrollo)
-    $database = "tutoriaApp"; //nombre de la base de datos
-
-    try {
-        //crear una nueva instancia de PDO para la conexion
-        $con = new PDO ("mysql:host=$servername;dbname=$database",$username,$password);
-        //configurar el PDO pra lanzar excepciones en caso de error
-        $con->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        //Linea comentada para depuracion: mostrar msj de conexion exitosa
-        // echo "conectado";
-    }catch(PDOException $e){
-        //en caso de error en la conexion, terminar el script y mostrar el mensaje de error
-        die ("Error de conexión: " . $e->getMessage());
-    }
-?>
-```
-
 ### tutoriaApp.sql
 
-Importa el siguiente script SQL en MySQL para crear la base de datos:
+Estando en PHPMYADMIN, crea una nueva base de datos llamada tutoriaapp, una vez creada la base, haz clic en ella e ir a la solapa SQL, en la consola pegar el siguiente código y hacer clic al botón Continuar:
 
 ```sql
 SET NAMES utf8mb4;
@@ -169,9 +142,7 @@ INSERT INTO `usuarios` VALUES (12, 'admin2', '$2y$10$zRfv8R7NGdkv5yZLpHdmbO/FFsV
 
 SET FOREIGN_KEY_CHECKS = 1;
 
-/*
-LEEEEEERRRRRRRRRRRRRR:
-A continuación, se adjunta las credenciales de algunos de los usuarios creados en la base de datos según su rol:
+### /Lo siguiente son las credenciales de algunos de los usuarios creados en la base de datos según su rol:
 USERs
 contraseña de los usuarios:
 juan: 123
@@ -182,7 +153,33 @@ admin: 123
 pepe: 123
 
 Admins y Users tienen acceso a funcionalidades diferentes según lo definido en la aplicación.
-*/
+
+## Paso 1: Configuración de la Base de Datos
+
+### config.php
+
+Crea el archivo `config.php` en la raíz del proyecto:
+
+```php
+<?php
+    $servername = "localhost"; //nombre servidor base de datos
+    $username = "root"; //nombre de usuario para la conexion
+    $password = ""; //contraseña para la coneccion (vacia por defecto en desarrollo)
+    $database = "tutoriaApp"; //nombre de la base de datos
+
+    try {
+        //crear una nueva instancia de PDO para la conexion
+        $con = new PDO ("mysql:host=$servername;dbname=$database",$username,$password);
+        //configurar el PDO pra lanzar excepciones en caso de error
+        $con->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        //Linea comentada para depuracion: mostrar msj de conexion exitosa
+        // echo "conectado";
+    }catch(PDOException $e){
+        //en caso de error en la conexion, terminar el script y mostrar el mensaje de error
+        die ("Error de conexión: " . $e->getMessage());
+    }
+?>
+```
 
 ## PRUEBA Paso 1: Configuración de la Base de Datos
 
@@ -1926,3 +1923,4 @@ switch ($action) {
 10. Desactiva o elimina usuarios desde la lista.
 
 ¡Felicidades! Has construido un sistema completo de tutorías con PHP y MySQL.
+
