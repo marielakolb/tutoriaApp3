@@ -1,249 +1,52 @@
-# Guía Completa para Construir el Sistema de Tutorías con PHP y MySQL
+Tutorial: Implementación del Sistema de Tutorías con PHP y MySQL
+Este tutorial guía paso a paso la construcción de un sistema de tutorías web utilizando PHP, MySQL y arquitectura MVC. Sigue los pasos en orden para asegurar una implementación correcta y funcional. Cada sección incluye instrucciones claras, verificación y pruebas para validar el progreso.
 
-Esta guía proporciona un tutorial paso a paso para construir un sistema completo de tutorías utilizando PHP y MySQL. El sistema permite a los usuarios registrarse, iniciar sesión, registrarse como tutores, solicitar tutorías, y a los administradores gestionar usuarios, asignaturas y solicitudes. Se basa en el patrón MVC (Modelo-Vista-Controlador) para una estructura organizada y mantenible.
-
-## ¿Qué es este Sistema?
-
-Este es un sistema web de tutorías que incluye:
-
-- **Autenticación de Usuarios**: Registro, login y logout con roles (usuario normal y administrador).
-- **Gestión de Tutores**: Los usuarios pueden registrarse como tutores con asignaturas específicas.
-- **Solicitudes de Tutoría**: Los usuarios pueden solicitar tutorías a tutores en asignaturas específicas.
-- **Panel de Administración**: Los administradores pueden gestionar usuarios, asignaturas y solicitudes.
-- **Gestión de Perfiles**: Edición de perfil con subida de fotos.
-- **Seguridad**: Contraseñas hasheadas, validación de sesiones y permisos por roles.
-
-## Estructura del Proyecto
-
-- `index.php`: Punto de entrada principal, maneja el enrutamiento.
-- `config.php`: Configuración de la base de datos.
-- `models/`: Modelos para interactuar con la base de datos.
-- `controllers/`: Controladores para manejar la lógica de negocio.
-- `views/`: Vistas para la presentación de datos.
-- `images/`: Carpeta para almacenar fotos de perfil de usuarios.
-- `tutoriaApp.sql`: Script SQL para crear la base de datos.
-
-## Tecnologías Utilizadas
-
-- PHP 7+
-- MySQL/MariaDB
-- HTML/CSS (básico)
-- PDO para conexiones a base de datos
-
-## Instrucciones de Instalación
-
-1. Importar el archivo `tutoriaApp.sql` en MySQL para crear la base de datos.
-2. Configurar la conexión a la base de datos en `config.php`.
-3. Crear la carpeta `images/` en la raíz del proyecto para almacenar fotos de perfil.
-4. Ejecutar el servidor web (ej. Apache) y acceder a `index.php`.
-
-## Próximas Mejoras
-
-- Implementar un sistema de notificaciones.
-- Agregar validación de formularios en el lado del cliente.
-- Mejorar el diseño de la interfaz con CSS y JavaScript.
-- Implementar paginación en listas largas.
-- Agregar funcionalidad de búsqueda y filtros.
-- Eliminar fotos antiguas al actualizar perfil para liberar espacio.
-
-### Creación de la Base de Datos en MySQL (usando script SQL)
-Estando en PHPMYADMIN, crea una nueva base de datos llamada tutoriaapp, una vez creada la base, haz clic en ella e ir a la solapa SQL, en la consola, pegar el siguiente código y hacer clic al botón Continuar:
-
-SET NAMES utf8mb4;
-SET FOREIGN_KEY_CHECKS = 0;
--- ----------------------------
--- Table structure for asignaturas
--- ----------------------------
-DROP TABLE IF EXISTS `asignaturas`;
-CREATE TABLE `asignaturas`  (
-  `id` int(0) NOT NULL AUTO_INCREMENT,
-  `nombre` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `nombre`(`nombre`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of asignaturas
--- ----------------------------
-INSERT INTO `asignaturas` VALUES (7, 'Ajedrez');
-INSERT INTO `asignaturas` VALUES (4, 'Ciencias Naturales');
-INSERT INTO `asignaturas` VALUES (6, 'Francés');
-INSERT INTO `asignaturas` VALUES (5, 'Historia');
-INSERT INTO `asignaturas` VALUES (2, 'Lengua y Literatura');
-INSERT INTO `asignaturas` VALUES (1, 'Matemáticas');
-
--- ----------------------------
--- Table structure for solicitudes
--- ----------------------------
-DROP TABLE IF EXISTS `solicitudes`;
-CREATE TABLE `solicitudes`  (
-  `id` int(0) NOT NULL AUTO_INCREMENT,
-  `user_id` int(0) NOT NULL,
-  `tutor_id` int(0) NOT NULL,
-  `asignatura_id` int(0) NOT NULL,
-  `estado` enum('pendiente','aceptada','rechazada') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT 'pendiente',
-  `fecha_solicitud` timestamp(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `user_id`(`user_id`) USING BTREE,
-  INDEX `tutor_id`(`tutor_id`) USING BTREE,
-  INDEX `asignatura_id`(`asignatura_id`) USING BTREE,
-  CONSTRAINT `solicitudes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT `solicitudes_ibfk_2` FOREIGN KEY (`tutor_id`) REFERENCES `tutores` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT `solicitudes_ibfk_3` FOREIGN KEY (`asignatura_id`) REFERENCES `asignaturas` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of solicitudes
--- ----------------------------
-INSERT INTO `solicitudes` VALUES (3, 7, 5, 7, 'pendiente', '2025-10-22 13:44:07');
-INSERT INTO `solicitudes` VALUES (4, 11, 5, 7, 'aceptada', '2025-10-22 17:32:44');
-INSERT INTO `solicitudes` VALUES (6, 11, 4, 5, 'aceptada', '2025-10-22 21:20:46');
-INSERT INTO `solicitudes` VALUES (7, 11, 4, 2, 'aceptada', '2025-10-22 21:21:20');
-
--- ----------------------------
--- Table structure for tutor_asignatura
--- ----------------------------
-DROP TABLE IF EXISTS `tutor_asignatura`;
-CREATE TABLE `tutor_asignatura`  (
-  `tutor_id` int(0) NOT NULL,
-  `asignatura_id` int(0) NOT NULL,
-  PRIMARY KEY (`tutor_id`, `asignatura_id`) USING BTREE,
-  INDEX `asignatura_id`(`asignatura_id`) USING BTREE,
-  CONSTRAINT `tutor_asignatura_ibfk_1` FOREIGN KEY (`tutor_id`) REFERENCES `tutores` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT `tutor_asignatura_ibfk_2` FOREIGN KEY (`asignatura_id`) REFERENCES `asignaturas` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of tutor_asignatura
--- ----------------------------
-INSERT INTO `tutor_asignatura` VALUES (4, 1);
-INSERT INTO `tutor_asignatura` VALUES (4, 4);
-INSERT INTO `tutor_asignatura` VALUES (4, 5);
-INSERT INTO `tutor_asignatura` VALUES (4, 6);
-INSERT INTO `tutor_asignatura` VALUES (6, 6);
-INSERT INTO `tutor_asignatura` VALUES (5, 7);
-
--- ----------------------------
--- Table structure for tutores
--- ----------------------------
-DROP TABLE IF EXISTS `tutores`;
-CREATE TABLE `tutores`  (
-  `id` int(0) NOT NULL AUTO_INCREMENT,
-  `user_id` int(0) NOT NULL,
-  `descripcion` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `user_id`(`user_id`) USING BTREE,
-  CONSTRAINT `tutores_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of tutores
--- ----------------------------
-INSERT INTO `tutores` VALUES (4, 2, 'Soy un libro abiertito');
-INSERT INTO `tutores` VALUES (5, 7, 'aprender y enseñar');
-INSERT INTO `tutores` VALUES (6, 11, 'francamente');
-
--- ----------------------------
--- Table structure for usuarios
--- ----------------------------
-DROP TABLE IF EXISTS `usuarios`;
-CREATE TABLE `usuarios`  (
-  `id` int(0) NOT NULL AUTO_INCREMENT,
-  `nombre` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `pass` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `rol` enum('admin','user') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT 'user',
-  `activo` tinyint(1) NULL DEFAULT 1,
-  `foto` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT 'images/photo.png',
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `nombre`(`nombre`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of usuarios
--- ----------------------------
-INSERT INTO `usuarios` VALUES (2, 'mariela', '$2y$10$qnBqKVAW0ZQ7S59plYyc4.KgspV89egGS6V9gpIPhWjHUkWOEPeLO', 'user', 1, 'images/yo.jpg');
-INSERT INTO `usuarios` VALUES (3, 'juan', '$2y$10$Ru.QuzXVZXXCgLowiodM9ehiI4FBEk6o2SSJAhe8TbeBnMC9rH2Uq', 'user', 1, 'images/photo.png');
-INSERT INTO `usuarios` VALUES (5, 'admin', '$2y$10$poKJZaD/Q0Q0.UFdWbqbA.5JGyQjXSdpLYCg7LxrKrbzZaKD/T5A.', 'admin', 1, 'images/photo.png');
-INSERT INTO `usuarios` VALUES (6, 'administrador', '$2y$10$ANHAOlNYxe.PDFBE0rgpaeahvVsqY9Xj2ijvC53RB4VDlPT2ctn6a', 'user', 1, 'images/photo.png');
-INSERT INTO `usuarios` VALUES (7, 'Pedro', '$2y$10$hT0mZ4CUTpS6ugr16dFjt.aiuK8jjmjVl0GMHJaxpiWpbGgLe2kQ6', 'user', 1, 'images/photo.png');
-INSERT INTO `usuarios` VALUES (9, 'pepe', '$2y$10$r39E668YrluhnMSmRpL55Ovvd/lVtddvi3CQtwkfOwvkxZZOY1y8O', 'admin', 1, 'images/photo.png');
-INSERT INTO `usuarios` VALUES (10, 'luisa', '$2y$10$gSYJzL4eKtoxtWhk7KkdYOwOrySbo9L4mCVgOKTvc2HzxI8U1.ykK', 'user', 1, 'images/photo.png');
-INSERT INTO `usuarios` VALUES (11, 'luli', '$2y$10$lBQWuvCYbQmVJ8hcwgSQKeNy0UrQQHcsjsdPdQ21SA8Qj3XUoEBQi', 'user', 1, 'images/mamiMari.jpg');
-INSERT INTO `usuarios` VALUES (12, 'admin2', '$2y$10$zRfv8R7NGdkv5yZLpHdmbO/FFsVYqPEpbItSFoa9tnLZg7BP5JnCK', 'admin', 1, 'images/mamiMari.jpg');
-
-SET FOREIGN_KEY_CHECKS = 1;
-
-### Lo siguiente son las credenciales de algunos de los usuarios creados en la base de datos según su rol:
-USERs
-contraseña de los usuarios:
-juan: 123
-mariela: 123
-
-ADMINs
-admin: 123
-pepe: 123
-
-Admins y Users tienen acceso a funcionalidades diferentes según lo definido en la aplicación.
-
-### Paso 1: Crear el archivo `config.php` en la raíz del proyecto, escribir el siguiente código dentro:
+Paso 1: Configuración Inicial del Entorno
+Antes de comenzar a codificar, configura el entorno de desarrollo para evitar errores posteriores.
+-	Instalar y configurar WAMP/XAMPP: Asegúrate de tener Apache, MySQL y PHP instalados. Inicia los servicios.
+-	Crear la base de datos: estando en phpmyadmin, crear la base de datos llamada tutoriaApp, y crea las tablas necesarias (usuarios, tutores, asignaturas, solicitudes) copiando el código contenido en el archivo script tutoriaApp.sql, en la solapa SQL, luego hacer clic al botón Continuar para ejecutarlo.
+VER QUE AL FINAL DEL SCRIPT, SE TIENEN CONTRASEÑAS DESENCRIPTADAS PARA PROBAR LA APLICACIÓN.
+-	Crear carpetas necesarias: abre Visual Code y crea las siguientes carpetas para este proyecto en C:/xampp/htdocs: 
+  tutoriaApp3
+ 
+Paso 1, Crear archivo de conexión a la base de datos: crear el archivo config.php dentro de la carpeta tutoriaApp3 con el siguiente código:
 <?php
     $servername = "localhost"; //nombre servidor base de datos
-    $username = "root"; //nombre de usuario para la conexion
-    $password = ""; //contraseña para la coneccion (vacia por defecto en desarrollo)
+    $username = "root"; //nombre de usuario para la conexión
+    $password = ""; //contraseña para la conexión (vacía por defecto en desarrollo)
     $database = "tutoriaApp"; //nombre de la base de datos
 
     try {
-        //crear una nueva instancia de PDO para la conexion
+        //crear una nueva instancia de PDO para la conexión
         $con = new PDO ("mysql:host=$servername;dbname=$database",$username,$password);
         //configurar el PDO pra lanzar excepciones en caso de error
         $con->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        //Linea comentada para depuracion: mostrar msj de conexion exitosa
-        // echo "conectado";
+        //Línea para depuración: mostrar msj de conexión exitosa
+         echo "conectado";
     }catch(PDOException $e){
-        //en caso de error en la conexion, terminar el script y mostrar el mensaje de error
+        //en caso de error en la conexión, terminar el script y mostrar el mensaje de error
         die ("Error de conexión: " . $e->getMessage());
     }
 ?>
 
-## PRUEBA Paso 1: 
-2. Crea el archivo `config.php` en la raíz del proyecto con el contenido proporcionado.
-3. Crea un archivo de prueba simple llamado `test_db.php` en la raíz con el siguiente contenido para verificar la conexión:
+-	Verificar conexión: Ejecutar config.php para confirmar que la conexión a la base de datos funciona sin errores. Para ello, accede a http://localhost/tutoriaapp3/config.php la barra de direcciones de tu navegador. Deberías ver un mensaje de conexión exitosa. Una vez que esto sale exitosamente, comentar la línea echo "conectado";
 
-<?php
-require_once('config.php');
+Paso 2, Implementación de los Modelos (Capa de Datos): Los modelos manejan la lógica de negocio y la interacción con la base de datos. Dentro de la carpeta models, crear los siguientes archivos:
 
-try {
-    $stmt = $con->query("SELECT COUNT(*) as total FROM usuarios");
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-    echo "Conexión exitosa. Total de usuarios: " . $result['total'];
-} catch (PDOException $e) {
-    echo "Error en la conexión: " . $e->getMessage();
-}
-?>
-
-4. Accede a test_db.php desde tu navegador (ej. http://localhost/tutoriaapp3/test_db.php). Deberías ver "Conexión exitosa. Total de usuarios: X" donde X es el número de usuarios en la BD.
-5. Elimina test_db.php después de la verificación para seguridad.
-
-## Paso 2: Crear los Modelos:
-### models/UserModel.php: y escribir el siguiente código.
-
+-	UserModel.php: Implementa todas las funciones de autenticación y gestión de usuarios (login, registro, actualización de perfil, roles). Colocar el siguiente código allí:
 <?php
 /**
  * Modelo de Usuario
  * Maneja las operaciones de base de datos relacionadas con usuarios.
  */
-
 require_once('config.php');
-
 class UserModel {
     private $conn;
-
     public function __construct() {
         // Obtener la conexión a la base de datos desde config.php
         global $con;
         $this->conn = $con;
     }
-
     /**
      * Autentica a un usuario con nombre y contraseña.
      * @param string $nombre Nombre de usuario
@@ -264,7 +67,6 @@ class UserModel {
         }
         return false;
     }
-
     /**
      * Obtiene el rol de un usuario por ID.
      * @param int $userId ID del usuario
@@ -278,6 +80,7 @@ class UserModel {
         return $user ? $user['rol'] : null;
     }
 
+/**NUEVA FUNCIÓN AGREGADA **************** */
     public function getUserId($nombre) {
         $stmt = $this->conn->prepare("SELECT id FROM usuarios WHERE nombre = :nombre");
         $stmt->bindParam(':nombre', $nombre);
@@ -285,7 +88,7 @@ class UserModel {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         return $user ? $user['id'] : null;
         }
-
+ /*********************************** */
     /**
      * Registra un nuevo usuario.
      * @param string $nombre Nombre de usuario
@@ -303,7 +106,6 @@ class UserModel {
         if ($stmt->rowCount() > 0) {
             return false; // Usuario ya existe
         }
-
         // Encriptar la contraseña antes de guardarla
         $hashedPass = password_hash($pass, PASSWORD_DEFAULT);
         // Preparar la consulta para insertar el nuevo usuario
@@ -315,7 +117,6 @@ class UserModel {
 
         return true;
     }
-
     /**
      * Registra un nuevo usuario con rol.
      * @param string $nombre Nombre del usuario
@@ -332,7 +133,6 @@ class UserModel {
         if ($stmt->rowCount() > 0) {
             return false; // Ya existe
         }
-
         // Insertar nuevo usuario
         $stmt = $this->conn->prepare("INSERT INTO usuarios (nombre, pass, rol, foto) VALUES (:nombre, :pass, :rol, :foto)");
         $stmt->bindParam(':nombre', $nombre);
@@ -342,7 +142,6 @@ class UserModel {
         $stmt->execute();
         return true;
     }
-
     /**
      * Obtiene todos los usuarios con su rol y si son tutores.
      * @return array Lista de usuarios
@@ -357,7 +156,6 @@ class UserModel {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
     /**
      * Elimina un usuario por ID.
      * @param int $userId ID del usuario
@@ -372,20 +170,16 @@ class UserModel {
         $stmt = $this->conn->prepare("DELETE FROM tutores WHERE user_id = :user_id");
         $stmt->bindParam(':user_id', $userId);
         $stmt->execute();
-
         // Eliminar solicitudes relacionadas
         $stmt = $this->conn->prepare("DELETE FROM solicitudes WHERE user_id = :user_id OR tutor_id IN (SELECT id FROM tutores WHERE user_id = :user_id)");
         $stmt->bindParam(':user_id', $userId);
         $stmt->execute();
-
         // Finalmente eliminar el usuario
         $stmt = $this->conn->prepare("DELETE FROM usuarios WHERE id = :id");
         $stmt->bindParam(':id', $userId);
         $stmt->execute();
-
         return $stmt->rowCount() > 0;
     }
-
     /**
      * Obtiene los datos de un usuario por ID.
      * @param int $userId ID del usuario
@@ -397,7 +191,6 @@ class UserModel {
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-
     /**
      * Actualiza los datos de un usuario.
      * @param int $userId ID del usuario
@@ -415,7 +208,6 @@ class UserModel {
         if ($stmt->rowCount() > 0) {
             return false; // Nombre ya existe
         }
-
         if ($pass && $foto) {
             $hashedPass = password_hash($pass, PASSWORD_DEFAULT);
             $stmt = $this->conn->prepare("UPDATE usuarios SET nombre = :nombre, pass = :pass, foto = :foto WHERE id = :id");
@@ -442,7 +234,6 @@ class UserModel {
         $stmt->execute();
         return true;
     }
-
     /**
      * Desactiva o activa la cuenta de un usuario.
      * @param int $userId ID del usuario
@@ -458,10 +249,8 @@ class UserModel {
     }
 }
 ?>
-```
 
-### models/TutorModel.php: Luego de crear el archivo, escribir el siguiente código php en él:
-
+TutorModel.php: Implementa funciones para gestionar tutores y asignaturas (registro de tutor, obtener tutores, asignaturas). Colocar el siguiente código allí:
 <?php
     require_once ('config.php');
 
@@ -532,12 +321,12 @@ class UserModel {
                 $stmt->bindParam(':asignatura_id', $asignaturaId);
                 $stmt->execute();
             }
-
             return true;
         } else {
             // Si no es tutor, insertar nuevo tutor
             $stmt = $this->conn->prepare("INSERT INTO tutores (user_id, descripcion) VALUES (:user_id, :descripcion)");
             $stmt->bindParam(':user_id', $userId);
+            $stmt->bindParam(':descripcion', $descripcion);
             $stmt->execute();
             $tutorId = $this->conn->lastInsertId();
 
@@ -572,7 +361,6 @@ class UserModel {
         $stmt->execute();
         return true;
     }
-
 
         //Obtener asignaturas disponibles
         public function getAsignaturas(){
@@ -654,22 +442,20 @@ class UserModel {
     }
 ?>
 
-### models/RequestModel.php: luego de crearlo, escribir el siguiente código php:
-
+-	RequestModel.php: Implementa funciones para solicitudes de tutoría (crear, aceptar, rechazar, listar solicitudes). Colocar el siguiente código allí:
 <?php
     require_once('config.php');
 
     class RequestModel {
         private $conn;
-
         public function __construct() {
             global $con;
             $this->conn = $con;
         }
-
         //crear una solicitud
         public function createRequest ($userId, $tutorId, $asignaturaId) {
-            // Verificar si ya existe una solicitud pendiente o aceptada para el mismo usuario, tutor y asignatura
+
+   // Verificar si ya existe una solicitud pendiente o aceptada para el mismo usuario, tutor y asignatura
             $stmt = $this->conn->prepare("SELECT id FROM solicitudes WHERE user_id = :user_id AND tutor_id = :tutor_id AND asignatura_id = :asignatura_id AND estado IN ('pendiente', 'aceptada')");
             $stmt->bindParam(':user_id', $userId);
             $stmt->bindParam(':tutor_id', $tutorId);
@@ -728,7 +514,6 @@ class UserModel {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
     /**
      * Obtiene todas las solicitudes aceptadas para que el admin las revise.
      * @return array Lista de solicitudes aceptadas
@@ -764,8 +549,6 @@ class UserModel {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
-
         //obtener solicitudes de un usuario
         public function getUserRequests($userId){
             $stmt = $this->conn->prepare("SELECT s.id, u.nombre AS tutor, a.nombre AS asignatura, s.estado, s.fecha_solicitud, TIMESTAMPDIFF(HOUR, s.fecha_solicitud, NOW()) AS horas_transcurridas
@@ -788,19 +571,15 @@ class UserModel {
             $stmt->bindParam(':user_id', $userId);
             $stmt->execute();
             $request = $stmt->fetch(PDO::FETCH_ASSOC);
-
             if (!$request) {
                 return false; // Solicitud no encontrada o no pertenece al usuario
             }
-
             if ($request['estado'] === 'aceptada') {
                 return false; // No se puede cancelar una solicitud aceptada
             }
-
             if ($request['horas_transcurridas'] >= 24) {
                 return false; // No se puede cancelar después de 24 horas
             }
-
             // Cancelar la solicitud (eliminarla)
             $stmt = $this->conn->prepare("DELETE FROM solicitudes WHERE id = :id");
             $stmt->bindParam(':id', $requestId);
@@ -808,11 +587,9 @@ class UserModel {
             return true;
         }
     }
+?>
 
-## PRUEBA Paso 2: Verificación de Modelos:
-
-1. Crear un archivo `test_models.php` en la raíz del proyecto con el siguiente contenido para probar los modelos:
-
+Verificación: Crea y ejecuta, en la carpeta tutoriaApp3, el archivo test_models.php para probar cada modelo. Coloca el siguiente código. Asegúrate de que las consultas SQL funcionen correctamente y devuelvan los datos esperados:
 <?php
 require_once('config.php');
 require_once('models/UserModel.php');
@@ -838,20 +615,18 @@ echo "Solicitudes pendientes: " . count($pending) . "<br>";
 echo "Modelos verificados exitosamente.";
 ?>
 
-2. Accede a `test_models.php` desde tu navegador (ej. `http://localhost/tutoriaapp3/test_models.php`). Deberías ver los conteos de usuarios, tutores y solicitudes sin errores.
-3. Elimina `test_models.php` después de la verificación.
+-	Accede a test_models.php desde tu navegador: http://localhost/tutoriaapp3/test_models.php
+Deberías ver los conteos de usuarios, tutores y solicitudes sin errores.
+-	Elimina `test_models.php` después de la verificación.
 
-## Paso 3: Crear los Controladores
-### controllers/AuthController.php: una vez creado el archivo en la carpeta controllers, escribir el siguiente código php:
-
+Paso 3, Implementación de los Controladores (Capa de Lógica): Los controladores procesan las solicitudes del usuario y coordinan entre modelos y vistas. Crear los siguientes archivos dentro de la carpeta controllers:
+-	AuthController.php: Maneja login, registro, logout, edición de perfil y activación/desactivación de cuentas. Escribir el siguiente código:
 <?php
 /**
  * Controlador de Autenticación
  * Maneja las acciones relacionadas con login, registro y logout.
  */
-
 require_once('models/UserModel.php');
-
 class AuthController {
     private $userModel;
 
@@ -859,7 +634,6 @@ class AuthController {
         // Crear instancia del modelo de usuario para acceder a la base de datos
         $this->userModel = new UserModel();
     }
-
     /**
      * Maneja el proceso de login.
      */
@@ -883,9 +657,7 @@ class AuthController {
                 }
                 $_SESSION['nombre'] = $nombre;
                 $_SESSION['user_id'] = $userId;
-                /*****************AGREGADO**************************/
                 $_SESSION['rol'] = $this->userModel->getUserRole($_SESSION['user_id']);
-                /***************************************************/
                 header("Location: index.php?action=home");
                 exit();
             } else {
@@ -899,7 +671,6 @@ class AuthController {
             include('views/login.php');
         }
     }
-
     /**
      * Maneja el proceso de registro.
      */
@@ -1053,21 +824,17 @@ class AuthController {
             header("Location: index.php?action=home");
             exit();
         }
-
         header("Location: index.php?action=edit_profile");
         exit();
     }
 }
 ?>
 
-### controllers/HomeController.php: creado el archivo, escribir el siguiente código php:
-
+-	controllers/HomeController.php: Muestra la página principal con la lista de tutores disponibles. Escribir el siguiente código:
 <?php
 require_once('models/TutorModel.php');
-
 class HomeController {
     public function index() {
-        /**AGREGADO**************** */
         session_start();
         if (isset($_SESSION['user_id']) && $_SESSION['rol'] === 'admin') {
             // Redirigir a dashboard de admin
@@ -1081,9 +848,7 @@ class HomeController {
 }
 ?>
 
-
-### controllers/TutorController.php: creado el archivo, escribir el siguiente código:
-
+-	TutorController.php: Gestiona registro como tutor, solicitud de tutorías y visualización de solicitudes propias. Escribir el siguiente código:
 <?php
 require_once('models/TutorModel.php');
 require_once('models/RequestModel.php');
@@ -1261,14 +1026,12 @@ class TutorController {
 }
 ?>
 
-### controllers/AdminController.php: una vez creado el archivo, escribir el siguiente código php:
-
+-	AdminController.php: Panel de administrador para gestionar usuarios, asignaturas y solicitudes (aceptar/rechazar). Escribir el siguiente código:
 <?php
 /**
  * Controlador de Administrador
  * Maneja acciones exclusivas para administradores.
  */
-
 require_once('models/TutorModel.php');
 require_once('models/RequestModel.php');
 require_once('models/UserModel.php'); // Agregado
@@ -1283,7 +1046,6 @@ class AdminController {
         $this->requestModel = new RequestModel();
         $this->userModel = new UserModel(); // Agregado
     }
-
     /**
      * Muestra el dashboard del administrador.
      */
@@ -1293,7 +1055,6 @@ class AdminController {
             header("Location: index.php?action=login");
             exit();
         }
-
         $asignaturas = $this->tutorModel->getAsignaturas();
         $pendingRequests = $this->requestModel->getPendingRequests();
         $acceptedRequests = $this->requestModel->getAcceptedRequests();
@@ -1301,7 +1062,6 @@ class AdminController {
         $usuarios = $this->userModel->getAllUsers();
         include('views/admin_dashboard.php');
     }
-
     /**
      * Muestra el formulario para agregar asignatura.
      */
@@ -1314,7 +1074,6 @@ class AdminController {
 
         include('views/add_asignatura.php');
     }
-
     /**
      * Procesa la adición de una nueva asignatura.
      */
@@ -1335,7 +1094,6 @@ class AdminController {
             include('views/add_asignatura.php');
         }
     }
-
     /**
      * Acepta una solicitud de tutoría.
      */
@@ -1352,7 +1110,6 @@ class AdminController {
         header("Location: index.php?action=admin_dashboard");
         exit();
     }
-
     /**
      * Rechaza una solicitud de tutoría.
      */
@@ -1369,7 +1126,6 @@ class AdminController {
         header("Location: index.php?action=admin_dashboard");
         exit();
     }
-
     /**
      * Muestra el formulario para editar asignatura.
      */
@@ -1388,7 +1144,6 @@ class AdminController {
             exit();
         }
     }
-
     /**
      * Procesa la edición de una asignatura.
      */
@@ -1414,14 +1169,13 @@ class AdminController {
             exit();
         }
     }
-
     /**
      * Elimina una asignatura.
      */
     public function deleteAsignatura() {
         session_start();
         if (!isset($_SESSION['user_id']) || $_SESSION['rol'] !== 'admin') {
-            header("Location: index.php?action=admin_dashboard");
+            header("Location: index.php?action=login");
             exit();
         }
 
@@ -1431,7 +1185,6 @@ class AdminController {
         header("Location: index.php?action=admin_dashboard");
         exit();
     }
-
     /**
      * Muestra el formulario para registrar un nuevo usuario.
      */
@@ -1444,7 +1197,6 @@ class AdminController {
 
         include('views/register_user.php');
     }
-
     /**
      * Procesa el registro de un nuevo usuario.
      */
@@ -1454,7 +1206,6 @@ class AdminController {
             header("Location: index.php?action=login");
             exit();
         }
-
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $nombre = $_POST['nombre'];
             $pass = password_hash($_POST['pass'], PASSWORD_DEFAULT);
@@ -1482,7 +1233,6 @@ class AdminController {
                     }
                 }
             }
-
             if ($this->userModel->registerWithRole($nombre, $pass, $rol, $foto)) {
                 $success = "Usuario registrado exitosamente.";
             } else {
@@ -1491,7 +1241,6 @@ class AdminController {
             include('views/register_user.php');
         }
     }
-
     /**
      * Elimina un usuario.
      */
@@ -1501,7 +1250,6 @@ class AdminController {
             header("Location: index.php?action=login");
             exit();
         }
-
         if (isset($_GET['user_id'])) {
             // Prevenir que el admin se elimine a sí mismo
             if ($_GET['user_id'] == $_SESSION['user_id']) {
@@ -1517,7 +1265,6 @@ class AdminController {
         header("Location: index.php?action=admin_dashboard");
         exit();
     }
-
     /**
      * Activa o desactiva la cuenta de un usuario.
      */
@@ -1527,7 +1274,6 @@ class AdminController {
             header("Location: index.php?action=login");
             exit();
         }
-
         if (isset($_GET['user_id'])) {
             $user = $this->userModel->getUserById($_GET['user_id']);
             $newStatus = $user['activo'] ? 0 : 1;
@@ -1539,10 +1285,10 @@ class AdminController {
 }
 ?>
 
-## Paso 4: Crear las Vistas:
+Verificación: Después de implementar cada controlador, accede a las rutas correspondientes en el navegador: index.php?action=home y verifica que no haya errores PHP. Usa var_dump para depurar si es necesario.
 
-### views/home.php: creado el archivo, escribir el siguiente código:
-
+Paso 4: Creación de las Vistas (Capa de Presentación): Las vistas son los archivos HTML/PHP que el usuario ve. Crea cada vista asegurándote de que incluyan formularios funcionales y muestren datos dinámicos. Crear las siguientes vistas en la carpeta views:
+-	home.php: Página principal con formulario de login y lista de tutores. Escribir el siguiente código:
 <!DOCTYPE html>
 <html>
 <head>
@@ -1579,7 +1325,6 @@ class AdminController {
     <?php endif; ?>
 
     <h2>Lista de Tutores Disponibles</h2>
-
     <ul>
         <?php foreach ($tutors as $tutor): ?>
             <li>
@@ -1602,8 +1347,213 @@ class AdminController {
 </body>
 </html>
 
-### views/admin_dashboard.php: dentro de este archivo, colocar el siguiente código php:
+-	login.php: Formulario de inicio de sesión. Escribir el siguiente código:
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Iniciar Sesión - Plataforma de Tutorías</title>
+</head>
+<body>
+    <h1>Iniciar Sesión</h1>
+    <?php if (isset($error)) { echo "<p style='color:red;'>$error</p>"; } ?>
+    <form method="POST" action="index.php?action=login">
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre" required><br>
+        <label for="pass">Contraseña:</label>
+        <input type="password" id="pass" name="pass" required><br>
+        <button type="submit">Iniciar Sesión</button>
+    </form>
+    <p><a href="index.php?action=register">Registrarse</a></p>
+    <p><a href="index.php?action=home">Volver al Inicio</a></p>
+</body>
+</html>
 
+-	register.php: Formulario de registro de usuario. 
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Plataforma de Tutorías - Registro</title>
+</head>
+<body>
+    <h1>Plataforma de Tutorías</h1>
+
+    <div style="float: right; width: 300px; border: 1px solid #ccc; padding: 10px; margin: 10px;">
+        <h3>Registrarse</h3>
+        <?php if (isset($_SESSION['register_error'])) { echo "<p style='color:red;'>".$_SESSION['register_error']."</p>"; unset($_SESSION['register_error']); } ?>
+        <form method="POST" action="index.php?action=register" enctype="multipart/form-data">
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" required><br>
+            <label for="pass">Contraseña:</label>
+            <input type="password" id="pass" name="pass" required><br>
+            <label for="foto">Foto de Perfil (opcional):</label>
+            <input type="file" id="foto" name="foto" accept="image/*"><br>
+            <button type="submit">Registrarse</button>
+        </form>
+        <p><a href="index.php?action=home">Volver al Inicio</a></p>
+    </div>
+
+    <h2>Lista de Tutores Disponibles</h2>
+
+    <ul>
+        <?php foreach ($tutors as $tutor): ?>
+            <li>
+                <strong><?php echo $tutor['nombre']; ?></strong><br>
+                Descripción: <?php echo $tutor['descripcion']; ?><br>
+                Asignaturas: <?php echo $tutor['asignaturas']; ?><br>
+                <em>Inicia sesión para solicitar tutoría</em>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+</body>
+</html>
+
+-	edit_profile.php: Formulario para editar perfil y subir foto. Escribir el siguiente código:
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Editar Perfil</title>
+</head>
+<body>
+    <h2>Editar Perfil</h2>
+    <?php if (!$user['activo']): ?>
+        <p style="color:red; font-weight:bold;">Tu cuenta está DESACTIVADA. Contacta al administrador para reactivarla.</p>
+    <?php endif; ?>
+    <?php if (isset($_SESSION['profile_success'])) { echo "<p style='color:green;'>".$_SESSION['profile_success']."</p>"; unset($_SESSION['profile_success']); } ?>
+    <?php if (isset($_SESSION['profile_error'])) { echo "<p style='color:red;'>".$_SESSION['profile_error']."</p>"; unset($_SESSION['profile_error']); } ?>
+
+    <form method="post" action="index.php?action=edit_profile_process" enctype="multipart/form-data">
+        <label for="nombre">Nombre de Usuario:</label>
+        <input type="text" id="nombre" name="nombre" value="<?php echo htmlspecialchars($user['nombre']); ?>" required><br>
+
+        <label for="pass">Nueva Contraseña (dejar vacío para no cambiar):</label>
+        <input type="password" id="pass" name="pass"><br>
+
+        <label for="foto">Foto de Perfil:</label>
+        <input type="file" id="foto" name="foto" accept="image/*"><br>
+        <?php if ($user['foto'] && $user['foto'] !== 'images/photo.png'): ?>
+            <img src="<?php echo $user['foto']; ?>" alt="Foto actual" style="width: 100px; height: 100px;"><br>
+        <?php endif; ?>
+
+        <button type="submit">Actualizar Perfil</button>
+    </form>
+
+    <?php if ($_SESSION['rol'] === 'user'): ?>
+        <h3>Estado de la Cuenta</h3>
+        <p>Estado actual: <?php echo $user['activo'] ? 'Activa' : 'Desactivada'; ?></p>
+        <form method="post" action="index.php?action=toggle_account_status">
+            <button type="submit"><?php echo $user['activo'] ? 'Desactivar Cuenta' : 'Reactivar Cuenta'; ?></button>
+        </form>
+    <?php endif; ?>
+
+    <a href="index.php?action=home">Volver</a>
+</body>
+</html>
+
+-	register_tutor.php: Formulario para registrarse como tutor.  Escribir el siguiente código:
+<!DOCTYPE html> <!-- Declara documento HTML5 -->
+<html> <!-- Inicio del documento HTML -->
+<head> <!-- Sección de encabezado -->
+    <title>Registrarse como Tutor</title> <!-- Título de la página -->
+</head> <!-- Fin de encabezado -->
+<body> <!-- Cuerpo de la página -->
+    <h2><?php echo $isTutor ? 'Actualizar Perfil de Tutor' : 'Registrarse como Tutor'; ?></h2> <!-- Encabezado principal -->
+    <form method="post" action="index.php?action=register_tutor_process"> <!-- Formulario POST para procesar registro -->
+        <label for="descripcion">Descripción:</label><br> <!-- Etiqueta para descripción -->
+        <textarea name="descripcion" required><?php echo $isTutor ? htmlspecialchars($tutor['descripcion'] ?? '') : ''; ?></textarea><br> <!-- Campo de texto para descripción -->
+
+        <label>Asignaturas:</label><br> <!-- Etiqueta para asignaturas -->
+        <?php foreach ($asignaturas as $asignatura): ?> <!-- Bucle para cada asignatura -->
+            <input type="checkbox" name="asignaturas[]" value="<?php echo $asignatura['id']; ?>" <?php echo $isTutor && in_array($asignatura['id'], $currentIds) ? 'checked' : ''; ?>> <?php echo $asignatura['nombre']; ?><br> <!-- Checkbox para seleccionar asignatura -->
+        <?php endforeach; ?> <!-- Fin bucle -->
+
+        <input type="submit" value="<?php echo $isTutor ? 'Actualizar Perfil' : 'Registrarse como Tutor'; ?>"> <!-- Botón de envío -->
+    </form> <!-- Fin formulario -->
+    <a href="index.php?action=home">Volver</a> <!-- Enlace para volver -->
+</body> <!-- Fin cuerpo -->
+</html> <!-- Fin documento HTML -->
+
+-	request_tutoria.php: Formulario para solicitar una tutoría a un tutor específico. Escribir el siguiente código:
+<!DOCTYPE html> <!-- Declara documento HTML5 -->
+<html> <!-- Inicio del documento HTML -->
+<head> <!-- Sección de encabezado -->
+    <title>Solicitar Tutoría</title> <!-- Título de la página -->
+</head> <!-- Fin de encabezado -->
+<body> <!-- Cuerpo de la página -->
+    <h2>Solicitar Tutoría</h2> <!-- Encabezado principal -->
+    <?php if (empty($asignaturas)): ?> <!-- Verificar si hay asignaturas disponibles -->
+        <p>Este tutor no tiene asignaturas disponibles para solicitar tutoría.</p> <!-- Mensaje si no hay asignaturas -->
+        <a href="index.php?action=home">Volver</a> <!-- Enlace para volver -->
+    <?php else: ?> <!-- Si hay asignaturas -->
+        <form method="post" action="index.php?action=request_tutoria_process"> <!-- Formulario POST para procesar solicitud -->
+            <input type="hidden" name="tutor_id" value="<?php echo $_GET['tutor_id']; ?>"> <!-- Campo oculto con ID del tutor -->
+
+            <label for="asignatura_id">Asignatura:</label> <!-- Etiqueta para asignatura -->
+            <select name="asignatura_id" required> <!-- Select para elegir asignatura -->
+                <?php foreach ($asignaturas as $asignatura): ?> <!-- Bucle para cada asignatura -->
+                    <option value="<?php echo $asignatura['id']; ?>"><?php echo $asignatura['nombre']; ?></option> <!-- Opción de asignatura -->
+                <?php endforeach; ?> <!-- Fin bucle -->
+            </select><br> <!-- Salto de línea -->
+
+            <input type="submit" value="Solicitar"> <!-- Botón de envío -->
+        </form> <!-- Fin formulario -->
+    <?php endif; ?> <!-- Fin condición -->
+    <a href="index.php?action=home">Volver</a> <!-- Enlace para volver -->
+</body> <!-- Fin cuerpo -->
+</html> <!-- Fin documento HTML -->
+
+-	my_requests.php**: Lista de solicitudes de tutoría del usuario. Escribir el siguiente código:
+<!DOCTYPE html> <!-- Declara documento HTML5 -->
+<html> <!-- Inicio del documento HTML -->
+<head> <!-- Sección de encabezado -->
+    <title>Mis Solicitudes</title> <!-- Título de la página -->
+</head> <!-- Fin de encabezado -->
+<body> <!-- Cuerpo de la página -->
+    <h2>Mis Solicitudes de Tutoría</h2> <!-- Encabezado principal -->
+    <?php if (isset($_SESSION['cancel_success'])) { echo "<p style='color:green;'>".$_SESSION['cancel_success']."</p>"; unset($_SESSION['cancel_success']); } ?>
+    <?php if (isset($_SESSION['cancel_error'])) { echo "<p style='color:red;'>".$_SESSION['cancel_error']."</p>"; unset($_SESSION['cancel_error']); } ?>
+
+    <?php
+    $pending = array_filter($requests, function($r) { return $r['estado'] === 'pendiente'; });
+    $accepted = array_filter($requests, function($r) { return $r['estado'] === 'aceptada'; });
+    $rejected = array_filter($requests, function($r) { return $r['estado'] === 'rechazada'; });
+    ?>
+
+    <h3>Solicitudes Pendientes</h3>
+    <ul>
+        <?php foreach ($pending as $request): ?>
+            <li>
+                Tutor: <?php echo $request['tutor']; ?><br>
+                Asignatura: <?php echo $request['asignatura']; ?><br>
+                Estado: <?php echo $request['estado']; ?><br>
+                Fecha: <?php echo $request['fecha_solicitud']; ?><br>
+                <?php if ($request['horas_transcurridas'] < 24): ?>
+                    <form method="POST" action="index.php?action=cancel_request" style="display:inline;">
+                        <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
+                        <button type="submit" onclick="return confirm('¿Estás seguro de cancelar esta solicitud?')">Cancelar Solicitud</button>
+                    </form>
+                <?php else: ?>
+                    <em>No se puede cancelar después de 24 horas</em>
+                <?php endif; ?>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+
+    <h3>Solicitudes Aceptadas</h3>
+    <ul>
+        <?php foreach ($accepted as $request): ?>
+            <li>
+                Tutor: <?php echo $request['tutor']; ?><br>
+                Asignatura: <?php echo $request['asignatura']; ?><br>
+                Estado: <?php echo $request['estado']; ?><br>
+                Fecha: <?php echo $request['fecha_solicitud']; ?>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+    <a href="index.php?action=home">Volver</a> <!-- Enlace para volver -->
+</body> <!-- Fin cuerpo -->
+</html> <!-- Fin documento HTML -->
+
+-	admin_dashboard.php: Panel de admin con gestión de usuarios, asignaturas y solicitudes. Escribir el siguiente código:
 <!DOCTYPE html>
 <html>
 <head>
@@ -1675,10 +1625,78 @@ class AdminController {
     </ul>
 </body>
 </html>
-```
 
-## Paso 5: Crear el Router (index.php): creado el archivo, colocar el siguiente código:
+-	add_asignatura.php: Formulario para agregar asignaturas (solo admin).
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Agregar Asignatura</title>
+</head>
+<body>
+    <h2>Agregar Nueva Asignatura</h2>
+    <?php if (isset($error)) echo "<p>$error</p>"; ?>
+    <?php if (isset($success)) echo "<p>$success</p>"; ?>
+    <form method="post" action="index.php?action=add_asignatura_process">
+        <label for="nombre">Nombre de la Asignatura:</label>
+        <input type="text" name="nombre" required>
+        <input type="submit" value="Agregar">
+    </form>
+    <a href="index.php?action=admin_dashboard">Volver al Panel</a>
+</body>
+</html>
 
+-	edit_asignatura.php: Formulario para editar asignaturas (solo admin). Escribir el siguiente código:
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Editar Asignatura</title>
+</head>
+<body>
+    <h2>Editar Asignatura</h2>
+    <?php if (isset($error)) echo "<p>$error</p>"; ?>
+    <?php if (isset($success)) echo "<p>$success</p>"; ?>
+    <form method="post" action="index.php?action=edit_asignatura_process">
+        <input type="hidden" name="asignatura_id" value="<?php echo $asignatura['id']; ?>">
+        <label for="nombre">Nombre de la Asignatura:</label>
+        <input type="text" name="nombre" value="<?php echo htmlspecialchars($asignatura['nombre']); ?>" required>
+        <input type="submit" value="Actualizar">
+    </form>
+    <a href="index.php?action=admin_dashboard">Volver al Panel</a>
+</body>
+</html>
+
+-	register_user.php: Formulario para registrar nuevos usuarios (solo admin). Escribir el siguiente código:
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registrar Usuario</title>
+</head>
+<body>
+    <h2>Registrar Nuevo Usuario</h2>
+    <?php if (isset($error)) echo "<p>$error</p>"; ?>
+    <?php if (isset($success)) echo "<p>$success</p>"; ?>
+    <form method="post" action="index.php?action=register_user_process" enctype="multipart/form-data">
+        <label for="nombre">Nombre:</label>
+        <input type="text" name="nombre" required>
+        <label for="pass">Contraseña:</label>
+        <input type="password" name="pass" required>
+        <label for="rol">Rol:</label>
+        <select name="rol" required>
+            <option value="user">Usuario</option>
+            <option value="admin">Administrador</option>
+        </select>
+        <label for="foto">Foto de Perfil (opcional):</label>
+        <input type="file" name="foto" accept="image/*">
+        <input type="submit" value="Registrar">
+    </form>
+    <a href="index.php?action=admin_dashboard">Volver al Panel</a>
+</body>
+</html>
+
+Verificación: Para cada vista, navega a la acción correspondiente: index.php?action=login y verifica que se renderice correctamente. Prueba formularios básicos sin errores de sintaxis.
+
+Paso 5, Implementación del Router Principal:  El router dirige las solicitudes a los controladores apropiados. Crear el siguiente archivo directamente en la carpeta del proyecto, tutoriaApp3:
+-	index.php: Implementa el enrutamiento basado en el parámetro action (ej. action=home llama a HomeController::index()). Incluye manejo de sesiones y redirecciones. Escribir el siguiente código:
 <?php
 require_once('controllers/AuthController.php');
 require_once('controllers/HomeController.php');
@@ -1800,62 +1818,25 @@ switch ($action) {
 }
 ?>
 
-## Funcionalidades Implementadas
+Verificación: Prueba todas las rutas posibles (home, login, register, admin_dashboard, etc.) y asegúrate de que carguen las vistas correctas sin errores 404 o PHP.
 
-### 1. Gestión de Usuarios
-- Registro de usuarios con nombre, contraseña y foto de perfil opcional.
-- Inicio de sesión y logout.
-- Edición de perfil (nombre, contraseña y foto de perfil).
-- Desactivación/reactivación de cuenta para usuarios normales.
-- Foto de perfil por defecto (photo.png) si no se asigna al registrarse.
-- Edición de foto de perfil por usuarios logueados.
+Paso 6: Pruebas Integrales y Verificación de Funcionalidades
+Una vez implementado todo, realiza pruebas exhaustivas para asegurar que el sistema funcione como un todo.
+-	Pruebas de autenticación: Registra un usuario, inicia sesión, edita perfil, cierra sesión. Verifica roles (user vs admin).
+-	Pruebas de tutorías: Regístrate como tutor, solicita una tutoría, verifica en "mis solicitudes".
+-	Pruebas de admin: Como admin, agrega/edita asignaturas, registra usuarios, acepta/rechaza solicitudes.
+-	Pruebas de subida de imágenes: Sube fotos en registro y edición de perfil; verifica tamaño y formato.
+-	Pruebas de seguridad: Intenta acceder a rutas restringidas sin login; verifica validaciones de formularios.
 
-### 2. Gestión de Tutores
-- Registro como tutor con descripción y asignaturas.
-- Lista de tutores disponibles en la página de registro.
+Verificación: Ejecuta el flujo completo: registro → login → solicitar tutoría → admin aprueba → logout.
 
-### 3. Gestión de Solicitudes de Tutoría
-- Solicitar tutoría a un tutor específico.
-- Ver mis solicitudes pendientes y aceptadas.
-- Aceptar/rechazar solicitudes (solo administradores).
+Notas Importantes
+-	Orden de implementación: Sigue los pasos en secuencia para evitar dependencias faltantes.
+-	Sesiones y roles: Usa `$_SESSION` para estado de usuario y verifica roles en controladores.
+-	Validaciones: Siempre valida entradas de usuario para prevenir errores y ataques.
+-	Errores comunes: Si hay warnings de "include", verifica rutas de archivos (deben ser relativas desde la raíz).
+-	Ayuda: Si encuentras errores, revisa logs de Apache/MySQL y usa `var_dump` para depurar.
 
-### 4. Gestión de Asignaturas
-- Agregar, editar y eliminar asignaturas (solo administradores).
-
-### 5. Panel de Administración
-- Dashboard con estadísticas y gestión de usuarios, tutores, solicitudes y asignaturas.
-- Registro de nuevos usuarios por administradores (con foto opcional).
-- Eliminación de usuarios (excepto el propio administrador).
-
-### 6. Roles y Permisos
-- Usuario normal: puede registrarse, iniciar sesión, editar perfil, solicitar tutoría, ver solicitudes.
-- Administrador: acceso completo a todas las funcionalidades, incluyendo gestión de usuarios, tutores, solicitudes y asignaturas.
-
-### 7. Seguridad
-- Contraseñas hasheadas con password_hash().
-- Validación de sesiones para acceso a páginas restringidas.
-- Prevención de eliminación de cuenta propia por administradores.
-- Validación de imágenes subidas (tamaño máximo 5MB, formatos permitidos: JPG, PNG, JPEG, GIF).
-
-### 8. Interfaz de Usuario
-- Navegación intuitiva con enlaces en todas las páginas.
-- Mensajes de éxito y error para feedback al usuario.
-- Diseño simple y funcional con HTML básico.
-- Formularios con enctype="multipart/form-data" para subida de archivos.
-
-## Paso 6: Probar la Aplicación
-
-1. Accede a index.php y registra un nuevo usuario.
-2. Inicia sesión con el usuario registrado.
-3. Regístrate como tutor seleccionando asignaturas.
-4. Solicita tutoría a otro tutor.
-5. Verifica tus solicitudes en "Mis Solicitudes".
-6. Inicia sesión como admin (usuario: admin, contraseña: 123).
-7. Ve al panel de admin y registra un nuevo usuario.
-8. Acepta o rechaza solicitudes pendientes.
-9. Agrega, edita o elimina asignaturas.
-10. Desactiva o elimina usuarios desde la lista.
-
-¡Felicidades! Has construido un sistema completo de tutorías con PHP y MySQL.
+Al completar estos pasos, tendrás un sistema de tutorías funcional y escalable.
 
 
