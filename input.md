@@ -32,7 +32,7 @@ PROBAR LA APLICACIÓN**.
         |--> controllers
         |--> images
 
-**Paso 1, Crear archivo de conexión a la base de datos**: crear el
+** 1, Crear archivo de conexión a la base de datos**: crear el
 archivo **config.php** dentro de la carpeta tutoriaApp3 con el siguiente
 código:
 
@@ -61,8 +61,8 @@ código:
     exitosa. Una vez que esto sale exitosamente, comentar la línea echo
     "conectado";
 
-**Paso 2, Implementación de los Modelos (Capa de Datos):** Los modelos
-manejan la lógica de negocio y la interacción con la base de datos.
+## Paso 2, Implementación de los Modelos (Capa de Datos): 
+Los modelos manejan la lógica de negocio y la interacción con la base de datos.
 Dentro de la carpeta **models**, crear los siguientes archivos:
 
 -   **UserModel.php**: Implementa todas las funciones de autenticación y
@@ -687,8 +687,8 @@ devuelvan los datos esperados:
 > errores.
 -   Elimina test_models.php después de la verificación.
 
-**Paso 3, Implementación de los Controladores (Capa de Lógica)**: Los
-controladores procesan las solicitudes del usuario y coordinan entre
+## Paso 3, Implementación de los Controladores (Capa de Lógica): 
+Los controladores procesan las solicitudes del usuario y coordinan entre
 modelos y vistas. Crear los siguientes archivos dentro de la carpeta
 **controllers**:
 
@@ -1379,7 +1379,8 @@ rutas correspondientes en el navegador: **index.php?action=home** y
 verifica que no haya errores PHP. Usa **var_dump** para depurar si es
 necesario.
 
-**Paso 4: Creación de las Vistas (Capa de Presentación)**: Las vistas
+## Paso 4: Creación de las Vistas (Capa de Presentación): 
+Las vistas
 son los archivos HTML/PHP que el usuario ve. Crea cada vista
 asegurándote de que incluyan formularios funcionales y muestren datos
 dinámicos. Crear las siguientes vistas en la carpeta **views**:
@@ -1814,8 +1815,8 @@ dinámicos. Crear las siguientes vistas en la carpeta **views**:
 index.php?action=login y verifica que se renderice correctamente. Prueba
 formularios básicos sin errores de sintaxis.
 
-**Paso 5, Implementación del Router Principal:** El router dirige las
-solicitudes a los controladores apropiados. Crear el siguiente archivo
+## Paso 5, Implementación del Router Principal: 
+El router dirige las solicitudes a los controladores apropiados. Crear el siguiente archivo
 directamente en la carpeta del proyecto, tutoriaApp3:
 
 -   **index.php**: Implementa el enrutamiento basado en el parámetro
@@ -1947,8 +1948,7 @@ directamente en la carpeta del proyecto, tutoriaApp3:
 register, admin_dashboard, etc.) y asegúrate de que carguen las vistas
 correctas sin errores 404 o PHP.
 
-**Paso 6: Pruebas Integrales y Verificación de Funcionalidades**
-
+## Paso 6: Pruebas Integrales y Verificación de Funcionalidades
 Una vez implementado todo, realiza pruebas exhaustivas para asegurar que
 el sistema funcione como un todo.
 
@@ -1970,7 +1970,7 @@ el sistema funcione como un todo.
 **Verificación**: Ejecuta el flujo completo: registro → login →
 solicitar tutoría → admin aprueba → logout.
 
-**Notas Importantes**
+## Notas Importantes
 
 -   **Orden de implementación**: Sigue los pasos en secuencia para
     evitar dependencias faltantes.
@@ -1989,4 +1989,5 @@ solicitar tutoría → admin aprueba → logout.
 
 Al completar estos pasos, tendrás un sistema de tutorías funcional y
 escalable.
+
 
