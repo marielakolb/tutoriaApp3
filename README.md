@@ -35,7 +35,7 @@ PROBAR LA APLICACIÓN**.
 ** 1, Crear archivo de conexión a la base de datos**: crear el
 archivo **config.php** dentro de la carpeta tutoriaApp3 con el siguiente
 código:
-
+```php
     <?php
         $servername = "localhost"; //nombre servidor base de datos
         $username = "root"; //nombre de usuario para la conexión
@@ -53,7 +53,7 @@ código:
               die ("Error de conexión: " . $e->getMessage());
            }
       ?>
-
+```
 -   **Verificar conexión**: Ejecutar **config.php** para confirmar que
     la conexión a la base de datos funciona sin errores. Para ello,
     accede a http://localhost/tutoriaapp3/config.php la barra de
@@ -68,7 +68,7 @@ Dentro de la carpeta **models**, crear los siguientes archivos:
 -   **UserModel.php**: Implementa todas las funciones de autenticación y
     gestión de usuarios (login, registro, actualización de perfil,
     roles). Colocar el siguiente código allí:
-    
+    ```php
         <?php
           /**
            * Modelo de Usuario
@@ -119,7 +119,6 @@ Dentro de la carpeta **models**, crear los siguientes archivos:
                   $user = $stmt->fetch(PDO::FETCH_ASSOC);
                   return $user ? $user['rol'] : null;
               }
-          
               public function getUserId($nombre) {
                   $stmt = $this->conn->prepare("SELECT id FROM usuarios WHERE nombre = :nombre");
                   $stmt->bindParam(':nombre', $nombre);
@@ -127,7 +126,6 @@ Dentro de la carpeta **models**, crear los siguientes archivos:
                   $user = $stmt->fetch(PDO::FETCH_ASSOC);
                   return $user ? $user['id'] : null;
                   }
-   
               /**
                * Registra un nuevo usuario.
                * @param string $nombre Nombre de usuario
@@ -293,11 +291,12 @@ Dentro de la carpeta **models**, crear los siguientes archivos:
               }
           }
           ?>
-
+```
 -   **TutorModel.php**: Implementa funciones para gestionar tutores y
 asignaturas (registro de tutor, obtener tutores, asignaturas). Colocar
 el siguiente código allí:
 
+```php
         <?php
             require_once ('config.php');
         
@@ -410,15 +409,12 @@ el siguiente código allí:
                 return true;
             }
         
-        
                 //Obtener asignaturas disponibles
                 public function getAsignaturas(){
                     $stmt = $this->conn->prepare("SELECT id, nombre FROM asignaturas");
                     $stmt->execute();
                     return $stmt->fetchAll (PDO::FETCH_ASSOC);
                 }
-        
-        
         
                 //Obtener asignatura por ID
                 public function getAsignaturaById($id) {
@@ -492,11 +488,11 @@ el siguiente código allí:
                 }
             }
         ?>
-
+```
 -   **RequestModel.php**: Implementa funciones para solicitudes de
     tutoría (crear, aceptar, rechazar, listar solicitudes). Colocar el
     siguiente código allí:
-
+```php
           <?php
               require_once('config.php');
           
@@ -605,8 +601,6 @@ el siguiente código allí:
                   $stmt->execute();
                   return $stmt->fetchAll(PDO::FETCH_ASSOC);
               }
-          
-          
                   //obtener solicitudes de un usuario
                   public function getUserRequests($userId){
                       $stmt = $this->conn->prepare("SELECT s.id, u.nombre AS tutor, a.nombre AS asignatura, s.estado, s.fecha_solicitud, TIMESTAMPDIFF(HOUR, s.fecha_solicitud, NOW()) AS horas_transcurridas
@@ -650,11 +644,12 @@ el siguiente código allí:
                   }
               }
           ?>
+```
 **Verificación**: Crea y ejecuta, en la carpeta **tutoriaApp3**, el
 archivo **test_models.php** para probar cada modelo. Coloca el siguiente
 código. Asegúrate de que las consultas SQL funcionen correctamente y
 devuelvan los datos esperados:
-
+```php
       <?php
           require_once('config.php');
           require_once('models/UserModel.php');
@@ -679,7 +674,7 @@ devuelvan los datos esperados:
           
           echo "Modelos verificados exitosamente.";
       ?>
-
+```
 -   Accede a test_models.php desde tu navegador:
     <http://localhost/tutoriaapp3/test_models.php>
 
@@ -695,7 +690,7 @@ modelos y vistas. Crear los siguientes archivos dentro de la carpeta
 -   **AuthController.php**: Maneja login, registro, logout, edición de
     perfil y activación/desactivación de cuentas. Escribir el siguiente
     código:
-
+```php
         <?php
         /**
          * Controlador de Autenticación
@@ -890,10 +885,10 @@ modelos y vistas. Crear los siguientes archivos dentro de la carpeta
             }
         }
         ?>
-
+```
 -   **HomeController.php**: Muestra la página principal con
     la lista de tutores disponibles. Escribir el siguiente código:
-
+```php
           <?php
               require_once('models/TutorModel.php');
               
@@ -912,11 +907,11 @@ modelos y vistas. Crear los siguientes archivos dentro de la carpeta
                   }
               }
           ?>
-
+```
 -   **TutorController.php**: Gestiona registro como tutor, solicitud de
     tutorías y visualización de solicitudes propias. Escribir el
     siguiente código:
-
+```php
           <?php
           require_once('models/TutorModel.php');
           require_once('models/RequestModel.php');
@@ -1093,11 +1088,11 @@ modelos y vistas. Crear los siguientes archivos dentro de la carpeta
               }
           }
           ?>
-
+```
 -   **AdminController.php**: Panel de administrador para gestionar
     usuarios, asignaturas y solicitudes (aceptar/rechazar). Escribir el
     siguiente código:
-
+```php
           <?php
           /**
            * Controlador de Administrador
@@ -1128,7 +1123,6 @@ modelos y vistas. Crear los siguientes archivos dentro de la carpeta
                       header("Location: index.php?action=login");
                       exit();
                   }
-          
                   $asignaturas = $this->tutorModel->getAsignaturas();
                   $pendingRequests = $this->requestModel->getPendingRequests();
                   $acceptedRequests = $this->requestModel->getAcceptedRequests();
@@ -1373,7 +1367,7 @@ modelos y vistas. Crear los siguientes archivos dentro de la carpeta
               }
           }
           ?>
-
+```
 **Verificación**: Después de implementar cada controlador, accede a las
 rutas correspondientes en el navegador: **index.php?action=home** y
 verifica que no haya errores PHP. Usa **var_dump** para depurar si es
@@ -1989,5 +1983,6 @@ solicitar tutoría → admin aprueba → logout.
 
 Al completar estos pasos, tendrás un sistema de tutorías funcional y
 escalable.
+
 
 
